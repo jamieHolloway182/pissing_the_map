@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pissing The Map</title>
-    <link rel="icon" href='{% static "pissmap/toilet.png" %}' type="image/x-icon">
-    <link rel="shortcut icon" href='{% static "pissmap/toilet.png" %}' type="image/x-icon">
+    <link rel="icon" href='{% static "toilet.png" %}' type="image/x-icon">
+    <link rel="shortcut icon" href='{% static "toilet.png" %}' type="image/x-icon">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         body {
@@ -25,11 +25,13 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            padding: 10px;
-            background-color: #ffffff;
-            border: 1px solid #210e0e;
+            height:10%;
             cursor: pointer;
             z-index: 1000; /* Set a high z-index to ensure the button is above the map */
+        }
+
+        #customButton:hover {
+            transform: scale(1.1); /* Increase size on hover */
         }
 
         #submitForm {
@@ -62,8 +64,8 @@
             position: absolute;
             top: 10px;
             left: 50%;
+            font-size:50px;
             transform: translateX(-50%);
-            font-size: 50px;
             font-weight: bold;
             z-index: 1000;
             text-align: center;
@@ -88,7 +90,7 @@
             color: #888;
         }
 
-        @media screen and (orientation: landscape) {
+        @media screen and (min-width: 1400px) {
             #submitForm {
                 width: 30%;
                 height: 30%;
@@ -102,19 +104,35 @@
             }
         }
 
-        @media screen and (max-width: 1200px) {
+        @media screen and (max-width: 1000px) {
+            #submitForm {
+                width: 50%;
+                height: 30%;
+            }
+        }
+        @media screen and (max-width: 800px) {
             #submitForm {
                 width: 60%;
                 height: 30%;
             }
         }
 
-            /* Styles for portrait orientation */
-        @media screen and (max-width: 800px) {
-            #submitForm {
-                width: 60%;
-                height: 30%;
+        @media screen and (max-width: 464px) {
+            #customButton{
+                height:7%;
             }
+
+            #map-title{
+                font-size:40px;
+            }
+            
+        }
+
+        @media screen and (max-width: 375px) {
+            #map-title{
+                font-size:33px;
+            }
+            
         }
 
     </style>
@@ -123,7 +141,7 @@
 
     <div id="map"></div>
     <div id="map-title">PISSING<br> THE MAP</div>
-    <div id="customButton">Add Toilet</div>
+    <img src='{% static "toilet.png" %}' id="customButton" alt="Add Toilet">
     <form class="centered-container">/
         <div id="submitForm">
             <div id="close-button">×</div>
@@ -147,7 +165,7 @@
         }
 
         // Initialize the map
-        var mymap = L.map('map', {minZoom:3}).setView([51.505, -0.09], 12);
+        var mymap = L.map('map', {minZoom:3, maxBounds:[[-90, -180],[90, 180]]}).setView([51.505, -0.09], 12);
 
         fetchFromDatabase()
 
@@ -158,7 +176,7 @@
 
         // Add a custom marker icon
         var customIcon = L.icon({
-            iconUrl: '{% static "pissmap/toilet.png" %}', // Replace with the path to your custom marker icon
+            iconUrl: '{% static "toilet.png" %}', // Replace with the path to your custom marker icon
             iconSize: [40, 40], // Adjust the size of your custom marker
             iconAnchor: [20, 40],
             popupAnchor: [0, -40]
