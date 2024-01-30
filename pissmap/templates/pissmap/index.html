@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map with Button</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+        }
+
+        #map {
+            height: 100vh;
+        }
+
+        #customButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #ffffff;
+            border: 1px solid #210e0e;
+            cursor: pointer;
+            z-index: 1000; /* Set a high z-index to ensure the button is above the map */
+        }
+
+        #submitForm {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #000000;
+            text-align: center;
+            z-index: -1; /* Set a high z-index to ensure the form is above the map */
+        }
+
+        #submitForm-title {
+            font-weight: bold;
+            font-size: 20px;
+            margin: 0px;
+        }
+
+        #map.hide-cursor {
+            cursor: none; /* Hide the cursor when the map has the 'hide-cursor' class */
+        }
+
+        #map.show-cursor {
+            cursor: pointer; /* Hide the cursor when the map has the 'hide-cursor' class */
+        }
+
+        #map-title {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 50px;
+            font-weight: bold;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        #textInput {
+            height: 200px; /* Adjust the height of the input box */
+            width: 500px; /* Adjust the width of the input box */
+            padding: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            margin-top: 10px;
+            resize: none;
+        }
+
+        #close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #888;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+    <div id="map-title">PISSING<br> THE MAP</div>
+    <div id="customButton">Add Toilet</div>
+    <form class="centered-container">/
+        <div id="submitForm">
+            <div id="close-button">×</div>
+            <p id="submitForm-title">Share Your Story</p>
+            <form id="textForm">
+                <textarea id="textInput" maxlength="560" placeholder="Type here..."></textarea>
+                <br>
+                <button type="button" onclick="submitText()">Submit</button>
+            </form>
+        </div>
+    </form>
+
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        class Marker{
+            constructor(m, t){
+                this.marker = m
+                this.text = t
+            }
+        }
+
+        // Initialize the map
+        var mymap = L.map('map').setView([51.505, -0.09], 13);
+
+        fetchFromDatabase()
+
+        // Add a tile layer (you can choose different providers)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(mymap);
+
+        // Add a custom marker icon
+        var customIcon = L.icon({
+            iconUrl: '{% static "pissmap/toilet.png" %}', // Replace with the path to your custom marker icon
+            iconSize: [40, 40], // Adjust the size of your custom marker
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40]
+        });
+
+        var markerOn = false;
+        var markerCursor = null;
+
+        var marker = null;
+
+        var markers = [];
+
+        var buttonClickable = true
+
+        var latlng = []
+
+        // Add event listener to move the marker with the mouse
+        mymap.on('mousemove', function (e) {
+            if(markerOn){
+                if(markerCursor){
+                    markerCursor.setLatLng(e.latlng);
+                }else{
+                    markerCursor = L.marker(e.latlng, { icon: customIcon }).addTo(mymap);
+                }
+            }
+        });
+
+        // Add click event on the map
+        mymap.on('click', function (e) {
+            // Add a marker with the custom icon at the clicked point
+            if(markerOn){
+
+                var mapElement = document.getElementById('map');
+                mapElement.classList.toggle('show-cursor');
+
+                openForm()
+
+                markerOn = false
+
+                buttonClickable = false
+                
+                latlng = e.latlng
+            }
+        });
+
+        // Add click event for the custom button
+        document.getElementById('customButton').addEventListener('click', function () {
+            if(buttonClickable){
+                var mapElement = document.getElementById('map');
+                mapElement.classList.toggle('hide-cursor');
+                
+                markerOn = true;
+            }
+
+        });
+
+        document.getElementById("close-button").addEventListener('click', closeForm)
+
+        function submitText(e) {
+            // Get the submitted text from the input field
+            
+            var submittedText = document.getElementById('textInput').value;
+            if (submittedText.length >= 5){
+                mymap.closePopup();
+
+                marker = L.marker(latlng, { icon: customIcon }).addTo(mymap);
+                marker.bindPopup(submittedText).openPopup();
+                
+                marker.on('mouseover', function (e) {
+                    if(buttonClickable){
+                        this.openPopup();
+                    }
+                });
+                
+                // Add mouseout event for the marker
+                marker.on('mouseout', function (e) {
+                    this.closePopup();
+                });
+                
+                markers.push(new Marker(marker, submittedText))
+                
+                submitToDatabase(submittedText)
+                closeForm()
+            }else{
+                alert("Please make your piss tale at least 5 characters")
+            }
+            
+            
+        }
+
+        function removeMarkers() {
+            for (m of markers){
+                mymap.removeLayer(m);
+            }
+        }
+
+        function addMarkers() {
+            mymap.removeLayer(marker);
+        }
+
+        function openForm(){
+            var formElement = document.getElementById('submitForm')
+            formElement.style.zIndex = 1000
+        }
+
+        function closeForm(){
+            var formElement = document.getElementById('submitForm')
+            formElement.style.zIndex = -1
+            buttonClickable = true
+            mymap.removeLayer(markerCursor)
+            markerCursor = null
+        }
+
+        function addPopup(marker, text){
+            marker.bindPopup(text);
+
+            marker.on('mouseover', function (e) {
+                if(buttonClickable){
+                    this.openPopup();
+                }
+            });
+            
+            // Add mouseout event for the marker
+            marker.on('mouseout', function (e) {
+                this.closePopup();
+            });
+            return marker
+        }
+
+        function fetchFromDatabase(){
+            fetch('/pissmap/fetch_data/')
+            .then(response => response.json())
+            .then(data => {
+                // Process the fetched data
+                if (data && data.data) {
+                    markers = data.data.map(d => new Marker(addPopup(L.marker({lat:d.latitude, lng:d.longitude}, { icon: customIcon }).addTo(mymap), d.text), d.text))
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function submitToDatabase(text){
+            fetch('/pissmap/add_entry/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ text: text,longitude: latlng.lng,latitude: latlng.lat})
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // Handle the response as needed
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+    </script>
+</body>
+</html>
