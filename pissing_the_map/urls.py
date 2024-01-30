@@ -20,7 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("pissmap/", include("pissmap.urls")),
+    path("", include("pissmap.urls")),
     path("admin/", admin.site.urls),
 ]
 

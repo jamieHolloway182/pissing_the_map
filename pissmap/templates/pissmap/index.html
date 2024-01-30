@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pissing The Map</title>
+    <link rel="icon" href='{% static "pissmap/toilet.png" %}' type="image/x-icon">
+    <link rel="shortcut icon" href='{% static "pissmap/toilet.png" %}' type="image/x-icon">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         body {
@@ -68,8 +70,8 @@
         }
 
         #textInput {
-            height: 200px; /* Adjust the height of the input box */
-            width: 500px; /* Adjust the width of the input box */
+            height: 70%; /* Adjust the height of the input box */
+            width: 90%; /* Adjust the width of the input box */
             padding: 5px;
             box-sizing: border-box;
             margin-bottom: 10px;
@@ -86,6 +88,34 @@
             color: #888;
         }
 
+        @media screen and (orientation: landscape) {
+            #submitForm {
+                width: 30%;
+                height: 30%;
+            }
+        }
+
+        @media screen and (max-width: 1400px) {
+            #submitForm {
+                width: 40%;
+                height: 30%;
+            }
+        }
+
+        @media screen and (max-width: 1200px) {
+            #submitForm {
+                width: 60%;
+                height: 30%;
+            }
+        }
+
+            /* Styles for portrait orientation */
+        @media screen and (max-width: 800px) {
+            #submitForm {
+                width: 60%;
+                height: 30%;
+            }
+        }
 
     </style>
 </head>
@@ -259,7 +289,7 @@
         }
 
         function fetchFromDatabase(){
-            fetch('/pissmap/fetch_data/')
+            fetch('/fetch_data/')
             .then(response => response.json())
             .then(data => {
                 // Process the fetched data
@@ -273,7 +303,7 @@
         }
 
         function submitToDatabase(text){
-            fetch('/pissmap/add_entry/', {
+            fetch('/add_entry/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
