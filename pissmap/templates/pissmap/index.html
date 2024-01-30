@@ -239,6 +239,7 @@
             // Get the submitted text from the input field
             
             var submittedText = document.getElementById('textInput').value;
+            document.getElementById('textInput').value = ""
             if (submittedText.length >= 5){
                 mymap.closePopup();
 
