@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Piss
 import json
+import zlib
 
 def index(request):
     return render(request, "pissmap/index.html")
@@ -17,6 +18,8 @@ def add_entry(request):
             text = data.get('text', '')
             longitude = data.get('longitude', '')
             latitude = data.get('latitude', '')
+
+            text = zlib.compress(text.encode())
             
             # Create an instance of the model with the submitted data
             new_entry = Piss(longitude=longitude, latitude=latitude, text=text)
@@ -30,6 +33,14 @@ def add_entry(request):
 
     return JsonResponse({'status': 'error'})
 
+def decompress(str):
+    try:
+        d = zlib.decompress(str).decode()
+        return d
+    except:
+        return str
+
 def fetch_data(request):
-    data = list(Piss.objects.values())  # Retrieve all data from the Piss model
-    return JsonResponse({'data': data})
+    data = list(Piss.objects.values())
+    decompressedData = [decompress(d) for d in data]  # Retrieve all data from the Piss model
+    return JsonResponse({'data': decompressedData})
