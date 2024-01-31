@@ -35,8 +35,9 @@ def add_entry(request):
 
 def decompress(str):
     try:
-        d = zlib.decompress(str).decode()
-        return d
+        d = zlib.decompress(str['text']).decode()
+        str['text'] = d
+        return str
     except:
         return str
 
