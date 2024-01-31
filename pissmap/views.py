@@ -6,7 +6,7 @@ import json
 import zlib
 
 def index(request):
-    return render(request, "pissmap/index.html")
+    return render(request, "index.html")
 
 @csrf_exempt
 def add_entry(request):
